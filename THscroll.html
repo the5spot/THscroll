@@ -3,14 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>TuneHatch Auto Scroll Loop</title>
+<title>TuneHatch – Scroll First 4 Images Loop</title>
 <style>
   html, body {
     margin: 0;
     padding: 0;
     overflow: hidden;
     height: 100%;
-    width: 100%;
     background: #000;
   }
   .wrapper {
@@ -35,13 +34,14 @@
 <script>
   const iframe = document.getElementById('tunehatch');
 
-  // Tune these if you want faster/slower scrolling or longer pause
-  const scrollSpeed = 0.25;    // pixels per frame (~16 ms)
-  const pauseAtBottom = 4000;  // milliseconds to pause before restart
-  const pauseAtTop = 2000;     // milliseconds before scrolling starts again
+  // ---- Adjustable settings ----
+  const scrollSpeed = 0.25;   // pixels per animation frame (~60 fps)
+  const pauseAtBottom = 4000; // pause ms before restarting
+  const pauseAtTop = 1500;    // pause ms before starting scroll again
+  const targetScroll = 1400;  // scroll pixels down (approx. 4 images worth)
+  // ------------------------------
 
   let position = 0;
-  let maxScroll;
   let scrolling = false;
 
   function startScroll() {
@@ -57,14 +57,9 @@
     position += scrollSpeed;
     iframe.style.transform = `translateY(-${position}px)`;
 
-    // Calculate maximum safe scroll based on iframe height vs. wrapper height
-    // Stop when reached bottom of content
-    maxScroll = iframe.clientHeight / 2; // half the iframe visible zone
-
-    if (position >= maxScroll) {
+    if (position >= targetScroll) {
+      // reached roughly 4 images → pause and restart
       scrolling = false;
-
-      // Pause, then jump back to top and restart
       setTimeout(() => {
         iframe.style.transform = 'translateY(0)';
         position = 0;
@@ -78,7 +73,7 @@
     }
   }
 
-  // Start after a short initial delay so the page has time to load
+  // Allow iframe to load first
   setTimeout(startScroll, 3000);
 </script>
 </body>
