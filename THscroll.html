@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TuneHatch Auto Scroll</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+</style>
+</head>
+<body>
+<iframe id="page" src="https://tunehatch.com/e/upcomingShows/45056"></iframe>
+
+<script>
+  const iframe = document.getElementById('page');
+  iframe.addEventListener('load', () => {
+    const runScroll = () => {
+      const win = iframe.contentWindow;
+      win.scrollBy(0,1);
+      if (win.innerHeight + win.scrollY >= win.document.body.scrollHeight) {
+        setTimeout(()=>{win.scrollTo(0,0); runScroll();},5000);
+      } else {
+        setTimeout(runScroll, 50);
+      }
+    };
+    setTimeout(runScroll, 2000);
+  });
+</script>
+</body>
+</html>
