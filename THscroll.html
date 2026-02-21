@@ -1,56 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TuneHatch Auto Scroll</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TuneHatch Auto Scroll Loop</title>
 <style>
-  body {
+  html, body {
     margin: 0;
+    padding: 0;
     overflow: hidden;
+    height: 100%;
+    width: 100%;
+    background: #000;
   }
-  .scroll-container {
+  .wrapper {
+    position: relative;
     width: 100vw;
     height: 100vh;
     overflow: hidden;
-    position: relative;
   }
   iframe {
     width: 100%;
-    height: 200%; /* Make iframe double the height of viewport */
-    border: 0;
+    height: 200%;
+    border: none;
     transform: translateY(0);
-    transition: transform 0.2s linear;
   }
 </style>
 </head>
 <body>
-<div class="scroll-container">
+<div class="wrapper">
   <iframe id="tunehatch" src="https://tunehatch.com/e/upcomingShows/45056"></iframe>
 </div>
 
 <script>
-  const iframe = document.getElementById("tunehatch");
-  let pos = 0;
-  const scrollSpeed = 0.3; // Change speed here
-  const directionDown = true;
-  let scrollDir = 1;
+  const iframe = document.getElementById('tunehatch');
 
-  function animateScroll() {
-    pos += scrollSpeed * scrollDir;
-    iframe.style.transform = `translateY(-${pos}px)`;
-    const maxPos = iframe.clientHeight / 2; // half the iframe height visible
+  // Tune these if you want faster/slower scrolling or longer pause
+  const scrollSpeed = 0.25;    // pixels per frame (~16 ms)
+  const pauseAtBottom = 4000;  // milliseconds to pause before restart
+  const pauseAtTop = 2000;     // milliseconds before scrolling starts again
 
-    // Reverse direction when bottom reached
-    if (pos >= maxPos || pos <= 0) {
-      scrollDir *= -1;
-      setTimeout(() => requestAnimationFrame(animateScroll), 1000); // Pause 1s
+  let position = 0;
+  let maxScroll;
+  let scrolling = false;
+
+  function startScroll() {
+    scrolling = true;
+    position = 0;
+    iframe.style.transform = 'translateY(0)';
+    requestAnimationFrame(animate);
+  }
+
+  function animate() {
+    if (!scrolling) return;
+
+    position += scrollSpeed;
+    iframe.style.transform = `translateY(-${position}px)`;
+
+    // Calculate maximum safe scroll based on iframe height vs. wrapper height
+    // Stop when reached bottom of content
+    maxScroll = iframe.clientHeight / 2; // half the iframe visible zone
+
+    if (position >= maxScroll) {
+      scrolling = false;
+
+      // Pause, then jump back to top and restart
+      setTimeout(() => {
+        iframe.style.transform = 'translateY(0)';
+        position = 0;
+        setTimeout(() => {
+          scrolling = true;
+          requestAnimationFrame(animate);
+        }, pauseAtTop);
+      }, pauseAtBottom);
     } else {
-      requestAnimationFrame(animateScroll);
+      requestAnimationFrame(animate);
     }
   }
 
-  setTimeout(() => requestAnimationFrame(animateScroll), 2000);
+  // Start after a short initial delay so the page has time to load
+  setTimeout(startScroll, 3000);
 </script>
 </body>
 </html>
