@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>TuneHatch – Fast Auto Scroll Loop</title>
+<title>TuneHatch – 2× Faster Auto Scroll Loop</title>
 <style>
   html, body {
     margin: 0;
@@ -35,10 +35,10 @@
   const iframe = document.getElementById('tunehatch');
 
   // ---- Adjustable settings ----
-  const scrollSpeed = 1.0;    // pixels per frame (↑ this for faster scrolling)
-  const pauseAtBottom = 3000; // ms to pause before restarting
-  const pauseAtTop = 1000;    // ms pause before scrolling again
-  const targetScroll = 1400;  // scrolling distance (approx. 4 images)
+  const scrollSpeed = 2.0;    // pixels per frame (2× faster)
+  const pauseAtBottom = 2500; // pause before restarting
+  const pauseAtTop = 800;     // pause before scrolling again
+  const targetScroll = 1400;  // scrolling distance (≈4 images)
   // ------------------------------
 
   let position = 0;
@@ -72,6 +72,7 @@
     }
   }
 
+  // wait briefly for page load
   setTimeout(startScroll, 2000);
 </script>
 </body>
