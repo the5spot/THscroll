@@ -3,27 +3,40 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>TuneHatch – 2× Faster Auto Scroll Loop</title>
+<title>TuneHatch – Centered Fast Auto Scroll</title>
 <style>
   html, body {
     margin: 0;
     padding: 0;
     overflow: hidden;
     height: 100%;
+    width: 100%;
     background: #000;
+    display: flex;
+    align-items: center;    /* vertical centering */
+    justify-content: center;/* horizontal centering */
   }
+
   .wrapper {
     position: relative;
     width: 100vw;
     height: 100vh;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
+
   iframe {
-    width: 100%;
-    height: 200%;
+    width: 80vw;            /* shrink if content seems too wide */
+    height: 160vh;          /* make iframe taller than viewport for scroll motion */
     border: none;
     transform: translateY(0);
+    transform-origin: top center;
+    background: #000;
   }
+
+  /* if you want exactly full-width, change width:80vw -> 100vw */
 </style>
 </head>
 <body>
@@ -34,12 +47,10 @@
 <script>
   const iframe = document.getElementById('tunehatch');
 
-  // ---- Adjustable settings ----
-  const scrollSpeed = 2.0;    // pixels per frame (2× faster)
-  const pauseAtBottom = 2500; // pause before restarting
-  const pauseAtTop = 800;     // pause before scrolling again
-  const targetScroll = 1400;  // scrolling distance (≈4 images)
-  // ------------------------------
+  const scrollSpeed = 2.0;     // pixels per frame (2× fast)
+  const pauseAtBottom = 2500;  // pause before restarting
+  const pauseAtTop = 800;      // pause before scrolling again
+  const targetScroll = 1400;   // about 4 images tall
 
   let position = 0;
   let scrolling = false;
@@ -72,7 +83,6 @@
     }
   }
 
-  // wait briefly for page load
   setTimeout(startScroll, 2000);
 </script>
 </body>
