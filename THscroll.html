@@ -1,10 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TuneHatch – Fixed Centered Scroll</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .wrapper {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  iframe {
+    width: 80vw;
+    height: 200%;
+    border: none;
+    transform: translateY(0);
+    transform-origin: top center;
+    background: #000;
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <iframe id="tunehatch" src="https://tunehatch.com/e/upcomingShows/45056"></iframe>
+</div>
+
 <script>
   const iframe = document.getElementById('tunehatch');
 
-  const scrollSpeed = 2.0;     // pixels per frame (2× fast)
+  const scrollSpeed = 2.0;     // pixels per frame
   const pauseAtBottom = 2500;  // ms pause before restarting
   const pauseAtTop = 800;      // ms pause before scrolling again
-  const targetScroll = 2400;   // << increased to include 4 full images
+  const targetScroll = 2400;   // how far to scroll down (~4 images)
 
   let position = 0;
   let scrolling = false;
@@ -39,3 +83,5 @@
 
   setTimeout(startScroll, 2000);
 </script>
+</body>
+</html>
