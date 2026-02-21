@@ -5,36 +5,52 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TuneHatch Auto Scroll</title>
 <style>
-  html, body {
+  body {
     margin: 0;
-    padding: 0;
-    height: 100%;
     overflow: hidden;
+  }
+  .scroll-container {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
   }
   iframe {
     width: 100%;
-    height: 100%;
-    border: none;
+    height: 200%; /* Make iframe double the height of viewport */
+    border: 0;
+    transform: translateY(0);
+    transition: transform 0.2s linear;
   }
 </style>
 </head>
 <body>
-<iframe id="page" src="https://tunehatch.com/e/upcomingShows/45056"></iframe>
+<div class="scroll-container">
+  <iframe id="tunehatch" src="https://tunehatch.com/e/upcomingShows/45056"></iframe>
+</div>
 
 <script>
-  const iframe = document.getElementById('page');
-  iframe.addEventListener('load', () => {
-    const runScroll = () => {
-      const win = iframe.contentWindow;
-      win.scrollBy(0,1);
-      if (win.innerHeight + win.scrollY >= win.document.body.scrollHeight) {
-        setTimeout(()=>{win.scrollTo(0,0); runScroll();},5000);
-      } else {
-        setTimeout(runScroll, 50);
-      }
-    };
-    setTimeout(runScroll, 2000);
-  });
+  const iframe = document.getElementById("tunehatch");
+  let pos = 0;
+  const scrollSpeed = 0.3; // Change speed here
+  const directionDown = true;
+  let scrollDir = 1;
+
+  function animateScroll() {
+    pos += scrollSpeed * scrollDir;
+    iframe.style.transform = `translateY(-${pos}px)`;
+    const maxPos = iframe.clientHeight / 2; // half the iframe height visible
+
+    // Reverse direction when bottom reached
+    if (pos >= maxPos || pos <= 0) {
+      scrollDir *= -1;
+      setTimeout(() => requestAnimationFrame(animateScroll), 1000); // Pause 1s
+    } else {
+      requestAnimationFrame(animateScroll);
+    }
+  }
+
+  setTimeout(() => requestAnimationFrame(animateScroll), 2000);
 </script>
 </body>
 </html>
