@@ -22,7 +22,7 @@
     const container = document.getElementById("events");
     try {
         const targetUrl = "https://tunehatch.com/api/v1/shows/feed/dc6b2a1a-b2c4-489b-bade-d1f3664ae171";
-        const finalUrl = "https://api.allorigins.win" + encodeURIComponent(targetUrl);
+        const finalUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(targetUrl);
         
         console.log("Fetching from:", finalUrl);
 
