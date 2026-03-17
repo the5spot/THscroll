@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TuneHatch Display</title>
+    <style>
+        body { font-family: sans-serif; background: black; color: white; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        .panel { border-bottom: 2px solid #444; padding: 20px; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        #weekly { flex: 2; overflow: hidden; position: relative; }
+        .scroll { animation: scrollUp 20s linear infinite; }
+        @keyframes scrollUp { 0% { transform: translateY(100%); } 100% { transform: translateY(-100%); } }
+        h2 { color: #ffcc00; margin: 0 0 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="panel" id="early-show"><h2>6:00 PM Early Show</h2><div class="content">Loading...</div></div>
+    <div class="panel" id="late-show"><h2>9:00 PM Late Show</h2><div class="content">Loading...</div></div>
+    <div class="panel" id="weekly"><h2>Upcoming Week</h2><div id="ticker" class="scroll"></div></div>
+
+    <script>
+        async function updateFeed() {
+            const response = await fetch('https://tunehatch.com/api/v1/shows/feed/dc6b2a1a-b2c4-489b-bade-d1f3664ae171');
+            const data = await response.json();
+            
+            // Filtering Logic
+            const shows = data.events || data; // Adjust based on JSON structure
+            const today = new Date().toISOString().split('T')[0];
+
+            const early = shows.find(s => s.start_time.includes('18:00') && s.start_time.startsWith(today));
+            const late = shows.find(s => s.start_time.includes('21:00') && s.start_time.startsWith(today));
+
+            document.querySelector('#early-show .content').innerText = early ? early.name : "No Early Show";
+            document.querySelector('#late-show .content').innerText = late ? late.name : "No Late Show";
+
+            const ticker = document.getElementById('ticker');
+            ticker.innerHTML = shows.map(s => `<p>${s.name} - ${new Date(s.start_time).toLocaleDateString()}</p>`).join('');
+        }
+        updateFeed();
+        setInterval(updateFeed, 3600000); // Refresh every hour
+    </script>
+</body>
+</html>
