@@ -21,83 +21,47 @@
     <div class="panel" id="weekly"><h2>Upcoming Week</h2><div id="ticker"></div></div>
 
     <script>
-    let auth_token = "";
-    let syncStarted = false;
-
-    // 1. Yodeck's standard entry point
-    function init_widget(config) {
-        if (config && config.player_params) {
-            auth_token = config.player_params['auth_token'];
-            console.log("Token received via init_widget");
-            startSync();
-        }
-    }
-
-    // 2. Fallback: Force start if init_widget takes too long
-    setTimeout(() => {
-        if (!syncStarted) {
-            console.log("Forcing sync start...");
-            startSync();
-        }
-    }, 5000);
-
-    function startSync() {
-        syncStarted = true;
-        updateFeed();
-        setInterval(updateFeed, 1800000); // Refresh every 30 mins
-    }
-
     async function updateFeed() {
-        const ports = ["9999", "8080"];
-        let success = false;
+        // This is a more stable proxy that works with Yodeck Chromium
+        const proxy = "https://api.allorigins.win/get?url=";
+        const targetUrl = encodeURIComponent("https://tunehatch.com/api/v1/shows/feed/dc6b2a1a-b2c4-489b-bade-d1f3664ae171?limit=100");
+        
+        try {
+            const response = await fetch(proxy + targetUrl);
+            const result = await response.json();
+            // AllOrigins wraps the data in a 'contents' string, we must parse it
+            const rawData = JSON.parse(result.contents); 
+            const shows = rawData.events;
+            
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
 
-        for (let port of ports) {
-            if (success) break;
+            // Filter for today's 6PM and 9PM slots
+            const early = shows.find(s => s.start_time.includes('18:00') && s.start_time.startsWith(todayStr));
+            const late = shows.find(s => s.start_time.includes('21:00') && s.start_time.startsWith(todayStr));
 
-            const playerProxy = `http://localhost:${port}/request`;
-            const requestOptions = {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `widget ${auth_token}` 
-                },
-                body: JSON.stringify({
-                    url: "https://tunehatch.com/api/v1/shows/feed/dc6b2a1a-b2c4-489b-bade-d1f3664ae171?limit=100",
-                    method: "GET",
-                    cache: 3600
-                })
-            };
+            document.getElementById('early-content').innerText = early ? early.name : "No Show Scheduled";
+            document.getElementById('late-content').innerText = late ? late.name : "No Show Scheduled";
 
-            try {
-                const response = await fetch(playerProxy, requestOptions);
-                if (!response.ok) continue;
+            // Populate the weekly scrolling list
+            const ticker = document.getElementById('ticker');
+            ticker.innerHTML = '<div class="scroll">' + 
+                shows.map(s => {
+                    const date = new Date(s.start_time).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                    const time = new Date(s.start_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                    return `<div class="ticker-item"><strong>${date} @ ${time}</strong><br>${s.name}</div>`;
+                }).join('') + '</div>';
 
-                const result = await response.json();
-                const shows = result.events;
-                const todayStr = new Date().toISOString().split('T')[0];
-
-                const early = shows.find(s => s.start_time.includes('18:00') && s.start_time.startsWith(todayStr));
-                const late = shows.find(s => s.start_time.includes('21:00') && s.start_time.startsWith(todayStr));
-
-                document.getElementById('early-content').innerText = early ? early.name : "No Show Scheduled";
-                document.getElementById('late-content').innerText = late ? late.name : "No Show Scheduled";
-
-                const ticker = document.getElementById('ticker');
-                ticker.innerHTML = '<div class="scroll">' + 
-                    shows.map(s => {
-                        const date = new Date(s.start_time).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-                        const time = new Date(s.start_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-                        return `<div class="ticker-item"><strong>${date} @ ${time}</strong><br>${s.name}</div>`;
-                    }).join('') + '</div>';
-                
-                success = true;
-            } catch (e) { continue; }
-        }
-
-        if (!success) {
-            document.getElementById('early-content').innerText = "Reconnecting...";
+        } catch (error) {
+            document.getElementById('early-content').innerText = "Data Temporarily Unavailable";
+            console.error("Fetch error:", error);
         }
     }
+
+    // Start immediately and refresh every 30 minutes
+    updateFeed();
+    setInterval(updateFeed, 1800000);
 </script>
+
 </body>
 </html>
