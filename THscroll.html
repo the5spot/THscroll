@@ -7,7 +7,7 @@
 <style>
   body { margin: 0; padding: 0; background: #000; color: #fff; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; }
   h1 { margin: 20px 0; font-size: 2.2rem; text-transform: uppercase; letter-spacing: 2px; }
-  .events { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 90vw; padding-bottom: 80px; }
+  .events { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 90vw; padding-bottom: 100px; }
   .event { text-align: center; }
   .event img { width: 100%; height: auto; border-radius: 10px; box-shadow: 0 0 15px rgba(255,255,255,0.1); }
   .title { margin-top: 15px; font-size: 1.4rem; font-weight: bold; }
@@ -22,15 +22,17 @@
 (async () => {
   const container = document.getElementById("events");
   try {
-    // FIXED: This is the exact single-string URL with the required /get?url= bridge
-    const finalProxyUrl = "https://api.allorigins.win";
+    const targetUrl = "https://tunehatch.com";
     
-    const response = await fetch(finalProxyUrl);
-    if (!response.ok) throw new Error("Network response was not ok");
+    // THE FIX: Adding /get?url= as recommended by the console
+    const fullUrl = "https://api.allorigins.win" + encodeURIComponent(targetUrl);
+    
+    const response = await fetch(fullUrl);
+    if (!response.ok) throw new Error("Proxy fetch failed");
     
     const data = await response.json();
     
-    // UNBOX: AllOrigins wraps the API data inside 'contents'
+    // UNBOX: AllOrigins puts the show list inside 'contents' as a string
     const shows = JSON.parse(data.contents); 
 
     container.innerHTML = ""; 
@@ -48,23 +50,23 @@
       container.appendChild(div);
     });
 
-    // Start auto-scroll once data is loaded
+    // Start auto-scroll once content is visible
     startAutoScroll();
 
   } catch (err) {
-    container.innerHTML = "<p style='color:red;'>Error loading shows. Please refresh.</p>";
-    console.error("Fetch Error:", err);
+    container.innerHTML = "<p style='color:red;'>Unable to load events. Please refresh.</p>";
+    console.error("TuneHatch Load Error:", err);
   }
 })();
 
 function startAutoScroll() {
   setInterval(() => {
     window.scrollBy(0, 1);
-    // If we hit the bottom, jump back to the top
+    // Loop back to top if at bottom
     if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 2) {
       window.scrollTo(0, 0);
     }
-  }, 40); // 40ms interval for smooth motion
+  }, 40); // 40ms interval
 }
 </script>
 </body>
