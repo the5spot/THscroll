@@ -22,17 +22,21 @@
 <script>
 (async () => {
     const container = document.getElementById("events");
+    const targetUrl = "https://tunehatch.com";
+    
+    // BACK TO ALLORIGINS: It is the most stable for this specific API
+    const proxyUrl = "https://api.allorigins.win" + encodeURIComponent(targetUrl);
+
     try {
-        // 1. THIS IS THE FIXED BRIDGE: note the /get?url= in the middle
-        const finalUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent("https://tunehatch.com");
-        
-        const response = await fetch(finalUrl);
-        if (!response.ok) throw new Error("Proxy connection failed");
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error("Proxy failed to respond");
         
         const data = await response.json();
         
-        // 2. UNBOX: Open the package from AllOrigins
+        // AllOrigins returns the data as a string in 'contents'
         const shows = JSON.parse(data.contents); 
+
+        if (!Array.isArray(shows)) throw new Error("Invalid data format");
 
         container.innerHTML = ""; 
         const options = { month: "short", day: "numeric", weekday: "short" };
@@ -49,17 +53,20 @@
             container.appendChild(div);
         });
 
+        // Start scrolling
         startAutoScroll();
 
     } catch (err) {
-        container.innerHTML = "<p style='color:red;'>Unable to load events. Please refresh.</p>";
-        console.error("TuneHatch Load Error:", err);
+        console.error("Load Error:", err);
+        container.innerHTML = "<p style='color:red;'>Unable to load shows. Refreshing in 30 seconds...</p>";
+        setTimeout(() => location.reload(), 30000);
     }
 })();
 
 function startAutoScroll() {
     setInterval(() => {
         window.scrollBy(0, 1);
+        // Loop back to top if at bottom
         if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 5) {
             window.scrollTo(0, 0);
         }
