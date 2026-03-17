@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The 5 Spot – Upcoming Shows</title>
+<!-- This line stops the favicon error -->
+<link rel="icon" href="data:;base64,iVBORw0KGgo=">
 <style>
   body { margin: 0; padding: 0; background: #000; color: #fff; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; }
   h1 { margin: 20px 0; font-size: 2.2rem; text-transform: uppercase; letter-spacing: 2px; }
@@ -22,17 +24,15 @@
 (async () => {
   const container = document.getElementById("events");
   try {
-    const targetUrl = "https://tunehatch.com";
+    const feed = "https://tunehatch.com";
     
-    // THE FIX: Adding /get?url= as recommended by the console
-    const fullUrl = "https://api.allorigins.win" + encodeURIComponent(targetUrl);
+    // THE CRITICAL LINE: Must have /get?url=
+    const proxyUrl = "https://api.allorigins.win" + encodeURIComponent(feed);
     
-    const response = await fetch(fullUrl);
-    if (!response.ok) throw new Error("Proxy fetch failed");
-    
+    const response = await fetch(proxyUrl);
     const data = await response.json();
     
-    // UNBOX: AllOrigins puts the show list inside 'contents' as a string
+    // UNBOX: data.contents is a string, we turn it into an object
     const shows = JSON.parse(data.contents); 
 
     container.innerHTML = ""; 
@@ -50,23 +50,21 @@
       container.appendChild(div);
     });
 
-    // Start auto-scroll once content is visible
     startAutoScroll();
 
   } catch (err) {
-    container.innerHTML = "<p style='color:red;'>Unable to load events. Please refresh.</p>";
-    console.error("TuneHatch Load Error:", err);
+    container.innerHTML = "<p style='color:red;'>Unable to load events. Refresh page.</p>";
+    console.error("Fetch Error:", err);
   }
 })();
 
 function startAutoScroll() {
   setInterval(() => {
     window.scrollBy(0, 1);
-    // Loop back to top if at bottom
     if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 2) {
       window.scrollTo(0, 0);
     }
-  }, 40); // 40ms interval
+  }, 40); 
 }
 </script>
 </body>
