@@ -51,26 +51,18 @@
   <div id="events" class="events"></div>
 <script>
 (async () => {
-  const eventsContainer = document.getElementById("events");
-  
+  const container = document.getElementById("events");
   try {
-    const feedUrl = "https://tunehatch.com";
+    // This line MUST have /get?url= to work
+    const proxyUrl = "https://api.allorigins.win" + encodeURIComponent("https://tunehatch.com");
     
-    // FIX: Using simple + to join the strings so there are no template errors
-    const proxyUrl = "https://api.allorigins.win" + encodeURIComponent(feedUrl);
-    
-    console.log("Fetching from:", proxyUrl);
-
     const response = await fetch(proxyUrl);
-    if (!response.ok) throw new Error("HTTP error! status: " + response.status);
-    
     const data = await response.json();
     
-    // AllOrigins puts the data in a string called 'contents'
-    if (!data.contents) throw new Error("No data received from proxy");
+    // Convert the text from the proxy into a list of shows
     const shows = JSON.parse(data.contents); 
 
-    eventsContainer.innerHTML = ""; 
+    container.innerHTML = ""; 
     const options = { month: "short", day: "numeric", weekday: "short" };
     
     shows.slice(0, 4).forEach(show => {
@@ -78,16 +70,15 @@
       const div = document.createElement("div");
       div.className = "event";
       div.innerHTML = `
-        <img src="${show.imageUrl}" alt="${show.title}" style="width:100%; border-radius:10px;">
-        <div class="title" style="margin-top:10px; font-size:1.4rem; font-weight:bold;">${show.title}</div>
-        <div class="date" style="opacity:0.8; margin-bottom:20px;">${date.toLocaleDateString("en-US", options)}</div>
+        <img src="${show.imageUrl}" style="width:100%; border-radius:10px;">
+        <div class="title" style="margin:10px 0; font-size:1.4rem; font-weight:bold;">${show.title}</div>
+        <div class="date" style="margin-bottom:30px; opacity:0.8;">${date.toLocaleDateString("en-US", options)}</div>
       `;
-      eventsContainer.appendChild(div);
+      container.appendChild(div);
     });
-
   } catch (err) {
-    eventsContainer.innerHTML = "<p style='color:red;'>Unable to load events.</p>";
-    console.error("TuneHatch Load Error:", err);
+    container.innerHTML = "<p>Unable to load events.</p>";
+    console.error("TuneHatch Error:", err);
   }
 })();
 </script>
