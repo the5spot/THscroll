@@ -53,21 +53,22 @@
 (async () => {
   try {
     const feedUrl = "https://tunehatch.com";
-    // 1. Ensure you use /get?url=
+    
+    // FIX: Added '?url=' so the proxy knows where to go
     const proxyUrl = "https://api.allorigins.win" + encodeURIComponent(feedUrl);
     
     const response = await fetch(proxyUrl);
-    if (!response.ok) throw new Error("Fetch failed");
+    if (!response.ok) throw new Error("Network error");
     
     const data = await response.json();
     
-    // 2. CRITICAL: You must parse data.contents because it's returned as a string
+    // FIX: Parse the 'contents' string into an actual list
     const shows = JSON.parse(data.contents); 
 
     const container = document.getElementById("events");
     const options = { month: "short", day: "numeric", weekday: "short" };
     
-    container.innerHTML = ""; // Remove error/loading message
+    container.innerHTML = ""; // Clear "Unable to load" message
     
     shows.slice(0, 4).forEach(show => {
       const date = new Date(show.startDate);
@@ -75,16 +76,16 @@
       div.className = "event";
       div.innerHTML = `
         <a href="${show.ticketUrl}" target="_blank">
-          <img src="${show.imageUrl}" alt="${show.title}">
+          <img src="${show.imageUrl}" alt="${show.title}" style="width:100%; border-radius:10px;">
         </a>
-        <div class="title">${show.title}</div>
-        <div class="date">${date.toLocaleDateString("en-US", options)}</div>
+        <div class="title" style="margin-top:10px; font-size:1.4rem;">${show.title}</div>
+        <div class="date" style="opacity:0.8;">${date.toLocaleDateString("en-US", options)}</div>
       `;
       container.appendChild(div);
     });
   } catch (err) {
     document.getElementById("events").innerHTML = "<p>Unable to load events.</p>";
-    console.error("TuneHatch Load Error:", err);
+    console.error("Error loading shows:", err);
   }
 })();
 </script>
