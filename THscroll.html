@@ -22,15 +22,15 @@
     const container = document.getElementById("events");
     try {
         const targetUrl = "https://tunehatch.com/api/v1/shows/feed/dc6b2a1a-b2c4-489b-bade-d1f3664ae171";
-        const finalUrl = "https://corsproxy.io/get?url=" + encodeURIComponent(targetUrl);
+        const finalUrl = "https://corsproxy.io/?" + encodeURIComponent(targetUrl);
         
         console.log("Fetching from:", finalUrl);
 
         const response = await fetch(finalUrl);
         if (!response.ok) throw new Error("Network error");
         
-        const data = await response.json();
-        const shows = JSON.parse(data.contents); 
+        
+        const shows = await response.json();  
 
         if (!shows || shows.length === 0) {
             container.innerHTML = "<h2>No shows currently scheduled.</h2>";
