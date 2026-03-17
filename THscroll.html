@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The 5 Spot – Upcoming Shows</title>
+    <!-- FIX: Stops the favicon 404 error -->
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <style>
         body { margin: 0; padding: 0; background: #000; color: #fff; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; }
@@ -23,16 +24,17 @@
 (async () => {
     const container = document.getElementById("events");
     try {
-        // FIXED: One solid string with the required /get?url= bridge
-        const finalUrl = "https://api.allorigins.win";
+        const targetUrl = "https://tunehatch.com";
         
-        console.log("Attempting fetch...");
-        const response = await fetch(finalUrl);
+        // FIX: The required /get?url= bridge for AllOrigins
+        const fullUrl = "https://api.allorigins.win" + encodeURIComponent(targetUrl);
+        
+        const response = await fetch(fullUrl);
         if (!response.ok) throw new Error("Proxy connection failed");
         
         const data = await response.json();
         
-        // UNBOX: AllOrigins wraps the data in a 'contents' string
+        // UNBOX: AllOrigins wraps the API response inside 'contents'
         const shows = JSON.parse(data.contents); 
 
         container.innerHTML = ""; 
@@ -50,11 +52,11 @@
             container.appendChild(div);
         });
 
-        // Start scrolling once shows are visible
+        // Start scrolling once content is loaded
         startAutoScroll();
 
     } catch (err) {
-        container.innerHTML = "<p style='color:red;'>Unable to load events. Please refresh.</p>";
+        container.innerHTML = "<p style='color:red;'>Unable to load events. Check console for details.</p>";
         console.error("TuneHatch Load Error:", err);
     }
 })();
@@ -65,7 +67,7 @@ function startAutoScroll() {
         if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 2) {
             window.scrollTo(0, 0);
         }
-    }, 40); 
+    }, 40); // 40ms interval for smooth motion
 }
 </script>
 </body>
