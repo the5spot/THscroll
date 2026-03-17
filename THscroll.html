@@ -22,7 +22,7 @@
     const container = document.getElementById("events");
     try {
         const targetUrl = "https://tunehatch.com/api/v1/shows/feed/dc6b2a1a-b2c4-489b-bade-d1f3664ae171";
-        const finalUrl = "https://corsproxy.io/?" + encodeURIComponent(targetUrl);
+        const finalUrl = "https://corsproxy.io/?url=" + encodeURIComponent(targetUrl);
         
         console.log("Fetching from:", finalUrl);
 
@@ -54,7 +54,7 @@
         startAutoScroll();
 
   } catch (err) {
-    container.innerHTML = "<p style='color:red;'>Connection Error. shit.</p>";
+    container.innerHTML = "<p style='color:red;'>Connection Error. shitfuck.</p>";
     console.error("FULL ERROR DETAILS:", err); // This will show you exactly what is failing
 }
 })();
