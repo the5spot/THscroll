@@ -51,24 +51,29 @@
   <div id="events" class="events"></div>
 <script>
 (async () => {
+  const eventsContainer = document.getElementById("events");
+  
   try {
+    // 1. The original data source
     const feedUrl = "https://tunehatch.com";
     
-    // FIX: Added '?url=' so the proxy knows where to go
-    const proxyUrl = "https://api.allorigins.win" + encodeURIComponent(feedUrl);
+    // 2. The CORRECT proxy URL format (Note the /get?url=)
+    const proxyUrl = `https://api.allorigins.win{encodeURIComponent(feedUrl)}`;
     
+    console.log("Fetching from:", proxyUrl); // Helpful for debugging in F12 console
+
     const response = await fetch(proxyUrl);
-    if (!response.ok) throw new Error("Network error");
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     
     const data = await response.json();
     
-    // FIX: Parse the 'contents' string into an actual list
+    // 3. AllOrigins wraps the data; we must parse the 'contents' string
+    if (!data.contents) throw new Error("No data received from proxy");
     const shows = JSON.parse(data.contents); 
 
-    const container = document.getElementById("events");
+    // 4. Render the shows
+    eventsContainer.innerHTML = ""; // Clear any previous error/loading text
     const options = { month: "short", day: "numeric", weekday: "short" };
-    
-    container.innerHTML = ""; // Clear "Unable to load" message
     
     shows.slice(0, 4).forEach(show => {
       const date = new Date(show.startDate);
@@ -78,14 +83,15 @@
         <a href="${show.ticketUrl}" target="_blank">
           <img src="${show.imageUrl}" alt="${show.title}" style="width:100%; border-radius:10px;">
         </a>
-        <div class="title" style="margin-top:10px; font-size:1.4rem;">${show.title}</div>
-        <div class="date" style="opacity:0.8;">${date.toLocaleDateString("en-US", options)}</div>
+        <div class="title" style="margin-top:10px; font-size:1.4rem; font-weight:bold;">${show.title}</div>
+        <div class="date" style="opacity:0.8; margin-bottom:20px;">${date.toLocaleDateString("en-US", options)}</div>
       `;
-      container.appendChild(div);
+      eventsContainer.appendChild(div);
     });
+
   } catch (err) {
-    document.getElementById("events").innerHTML = "<p>Unable to load events.</p>";
-    console.error("Error loading shows:", err);
+    eventsContainer.innerHTML = "<p style='color:red;'>Unable to load events. Please check the console (F12) for details.</p>";
+    console.error("TuneHatch Load Error:", err);
   }
 })();
 </script>
