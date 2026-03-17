@@ -7,11 +7,11 @@
 <style>
   body { margin: 0; padding: 0; background: #000; color: #fff; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; }
   h1 { margin: 20px 0; font-size: 2.2rem; text-transform: uppercase; letter-spacing: 2px; }
-  .events { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 90vw; padding-bottom: 50px; }
+  .events { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 90vw; padding-bottom: 80px; }
   .event { text-align: center; }
-  .event img { width: 100%; height: auto; border-radius: 10px; box-shadow: 0 0 10px rgba(255,255,255,0.2); }
-  .title { margin-top: 10px; font-size: 1.4rem; font-weight: bold; }
-  .date { font-size: 1rem; opacity: 0.8; margin-bottom: 20px; }
+  .event img { width: 100%; height: auto; border-radius: 10px; box-shadow: 0 0 15px rgba(255,255,255,0.1); }
+  .title { margin-top: 15px; font-size: 1.4rem; font-weight: bold; }
+  .date { font-size: 1.1rem; opacity: 0.8; margin-bottom: 30px; }
 </style>
 </head>
 <body>
@@ -22,15 +22,16 @@
 (async () => {
   const container = document.getElementById("events");
   try {
-    // 1. Fetch the data using the correct proxy path
-    const tuneHatchUrl = "https://tunehatch.com";
-    const proxyUrl = "https://api.allorigins.win" + encodeURIComponent(tuneHatchUrl);
+    // FIXED: This is the exact single-string URL with the required /get?url= bridge
+    const finalProxyUrl = "https://api.allorigins.win";
     
-    const response = await fetch(proxyUrl);
-    if (!response.ok) throw new Error("Proxy error");
+    const response = await fetch(finalProxyUrl);
+    if (!response.ok) throw new Error("Network response was not ok");
     
     const data = await response.json();
-    const shows = JSON.parse(data.contents); // Unpack the data
+    
+    // UNBOX: AllOrigins wraps the API data inside 'contents'
+    const shows = JSON.parse(data.contents); 
 
     container.innerHTML = ""; 
     const options = { month: "short", day: "numeric", weekday: "short" };
@@ -47,22 +48,23 @@
       container.appendChild(div);
     });
 
-    // 2. Simple Auto-Scroll for YoDeck
+    // Start auto-scroll once data is loaded
     startAutoScroll();
 
   } catch (err) {
-    container.innerHTML = "<p>Unable to load events. Check F12 Console.</p>";
-    console.error("TuneHatch Error:", err);
+    container.innerHTML = "<p style='color:red;'>Error loading shows. Please refresh.</p>";
+    console.error("Fetch Error:", err);
   }
 })();
 
 function startAutoScroll() {
   setInterval(() => {
     window.scrollBy(0, 1);
-    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
-      window.scrollTo(0, 0); // Loop back to top
+    // If we hit the bottom, jump back to the top
+    if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 2) {
+      window.scrollTo(0, 0);
     }
-  }, 50); // Adjust '50' for speed
+  }, 40); // 40ms interval for smooth motion
 }
 </script>
 </body>
