@@ -2,16 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The 5 Spot – Upcoming Shows</title>
     <style>
-        body { margin: 0; padding: 0; background: #000; color: #fff; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
-        h1 { margin: 20px 0; font-size: 2.2rem; text-transform: uppercase; letter-spacing: 2px; border-bottom: 2px solid #fff; padding-bottom: 5px; }
-        .events { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 90vw; padding-bottom: 150px; }
-        .event { text-align: center; }
-        .event img { width: 100%; height: auto; border-radius: 10px; box-shadow: 0 0 15px rgba(255,255,255,0.1); background: #333; }
-        .title { margin-top: 15px; font-size: 1.4rem; font-weight: bold; }
-        .date { font-size: 1.1rem; opacity: 0.8; margin-bottom: 30px; }
+        body { margin: 0; background: #000; color: #fff; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
+        h1 { margin: 20px 0; font-size: 2.5rem; text-transform: uppercase; border-bottom: 2px solid #fff; padding-bottom: 10px; }
+        .events { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 90vw; padding-bottom: 300px; }
+        .event { text-align: center; margin-bottom: 20px; }
+        .event img { width: 100%; height: auto; border-radius: 10px; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
+        .title { margin-top: 15px; font-size: 1.6rem; font-weight: bold; }
+        .date { font-size: 1.2rem; opacity: 0.8; }
     </style>
 </head>
 <body>
@@ -22,23 +21,24 @@
 (async function loadShows() {
     const container = document.getElementById("events");
     try {
+        // Your specific TuneHatch JSON feed
         const targetUrl = "https://tunehatch.com";
         
-        // Use standard concatenation (+) instead of backticks (`) to avoid syntax errors
+        // FIXED: The proxy bridge is now correctly included
         const finalUrl = "https://api.allorigins.win" + encodeURIComponent(targetUrl);
         
         console.log("Fetching from:", finalUrl);
 
         const response = await fetch(finalUrl);
-        if (!response.ok) throw new Error("Proxy connection failed");
+        if (!response.ok) throw new Error("Network error");
         
         const data = await response.json();
         
-        // AllOrigins wraps the result in a 'contents' field
+        // Unbox the contents string into a real JSON array
         const shows = JSON.parse(data.contents); 
 
         if (!shows || shows.length === 0) {
-            container.innerHTML = "<h2>No shows found.</h2>";
+            container.innerHTML = "<h2>No shows currently scheduled.</h2>";
             return;
         }
 
@@ -50,26 +50,28 @@
             const div = document.createElement("div");
             div.className = "event";
             div.innerHTML = 
-                '<img src="' + (show.imageUrl || "") + '" alt="' + (show.title || "Show") + '">' +
-                '<div class="title">' + (show.title || "Upcoming Show") + '</div>' +
+                '<img src="' + (show.imageUrl || "") + '">' +
+                '<div class="title">' + (show.title || "Show") + '</div>' +
                 '<div class="date">' + date.toLocaleDateString("en-US", options) + '</div>';
             container.appendChild(div);
         });
 
+        // Start the scrolling
         startAutoScroll();
 
     } catch (err) {
-        container.innerHTML = "<p style='color:red;'>Error loading shows. Retrying...</p>";
+        container.innerHTML = "<p style='color:red;'>Connection Error. Retrying...</p>";
         console.error("Load Error:", err);
-        // Automatic retry after 10 seconds
-        setTimeout(function() { location.reload(); }, 10000);
+        // Refresh page automatically on error after 5 seconds
+        setTimeout(function() { location.reload(); }, 5000);
     }
 })();
 
 function startAutoScroll() {
     setInterval(function() {
         window.scrollBy(0, 1);
-        if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 5) {
+        // Reset to top once we hit the end
+        if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 2) {
             window.scrollTo(0, 0);
         }
     }, 40); 
