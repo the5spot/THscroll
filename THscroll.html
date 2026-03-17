@@ -4,12 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The 5 Spot – Upcoming Shows</title>
-    <!-- FIX: Stops the favicon 404 error -->
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <style>
         body { margin: 0; padding: 0; background: #000; color: #fff; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; }
         h1 { margin: 20px 0; font-size: 2.2rem; text-transform: uppercase; letter-spacing: 2px; }
-        .events { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 90vw; padding-bottom: 100px; }
+        .events { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 90vw; padding-bottom: 150px; }
         .event { text-align: center; }
         .event img { width: 100%; height: auto; border-radius: 10px; box-shadow: 0 0 15px rgba(255,255,255,0.1); }
         .title { margin-top: 15px; font-size: 1.4rem; font-weight: bold; }
@@ -23,19 +22,21 @@
 <script>
 (async () => {
     const container = document.getElementById("events");
+    const targetUrl = "https://tunehatch.com";
+    
+    // NEW PROXY: corsproxy.io is often faster and more reliable for JSON
+    const proxyUrl = "https://corsproxy.io?" + encodeURIComponent(targetUrl);
+
     try {
-        const targetUrl = "https://tunehatch.com";
+        console.log("Fetching shows via corsproxy.io...");
+        const response = await fetch(proxyUrl);
         
-        // FIX: The required /get?url= bridge for AllOrigins
-        const fullUrl = "https://api.allorigins.win" + encodeURIComponent(targetUrl);
+        if (!response.ok) throw new Error("Primary proxy failed");
         
-        const response = await fetch(fullUrl);
-        if (!response.ok) throw new Error("Proxy connection failed");
-        
-        const data = await response.json();
-        
-        // UNBOX: AllOrigins wraps the API response inside 'contents'
-        const shows = JSON.parse(data.contents); 
+        // This proxy returns the data DIRECTLY, no need to unbox 'contents'
+        const shows = await response.json(); 
+
+        if (!Array.isArray(shows)) throw new Error("Data is not a list");
 
         container.innerHTML = ""; 
         const options = { month: "short", day: "numeric", weekday: "short" };
@@ -52,22 +53,22 @@
             container.appendChild(div);
         });
 
-        // Start scrolling once content is loaded
+        // Start scrolling
         startAutoScroll();
 
     } catch (err) {
-        container.innerHTML = "<p style='color:red;'>Unable to load events. Check console for details.</p>";
         console.error("TuneHatch Load Error:", err);
+        container.innerHTML = "<p style='color:red;'>Unable to load events. Error: " + err.message + "</p>";
     }
 })();
 
 function startAutoScroll() {
     setInterval(() => {
         window.scrollBy(0, 1);
-        if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 2) {
+        if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 5) {
             window.scrollTo(0, 0);
         }
-    }, 40); // 40ms interval for smooth motion
+    }, 40); 
 }
 </script>
 </body>
