@@ -22,21 +22,17 @@
 <script>
 (async () => {
     const container = document.getElementById("events");
-    const targetUrl = "https://tunehatch.com";
-    
-    // NEW PROXY: corsproxy.io is often faster and more reliable for JSON
-    const proxyUrl = "https://corsproxy.io?" + encodeURIComponent(targetUrl);
-
     try {
-        console.log("Fetching shows via corsproxy.io...");
-        const response = await fetch(proxyUrl);
+        // 1. THIS IS THE FIXED BRIDGE: note the /get?url= in the middle
+        const finalUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent("https://tunehatch.com");
         
-        if (!response.ok) throw new Error("Primary proxy failed");
+        const response = await fetch(finalUrl);
+        if (!response.ok) throw new Error("Proxy connection failed");
         
-        // This proxy returns the data DIRECTLY, no need to unbox 'contents'
-        const shows = await response.json(); 
-
-        if (!Array.isArray(shows)) throw new Error("Data is not a list");
+        const data = await response.json();
+        
+        // 2. UNBOX: Open the package from AllOrigins
+        const shows = JSON.parse(data.contents); 
 
         container.innerHTML = ""; 
         const options = { month: "short", day: "numeric", weekday: "short" };
@@ -53,12 +49,11 @@
             container.appendChild(div);
         });
 
-        // Start scrolling
         startAutoScroll();
 
     } catch (err) {
+        container.innerHTML = "<p style='color:red;'>Unable to load events. Please refresh.</p>";
         console.error("TuneHatch Load Error:", err);
-        container.innerHTML = "<p style='color:red;'>Unable to load events. Error: " + err.message + "</p>";
     }
 })();
 
