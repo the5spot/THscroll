@@ -6,9 +6,9 @@
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
         h1 { margin: 20px 0; font-size: 2.5rem; text-transform: uppercase; border-bottom: 2px solid #fff; padding-bottom: 10px; }
-        .events { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 90vw; padding-bottom: 300px; }
+        .events { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 90vw; padding-bottom: 400px; }
         .event { text-align: center; margin-bottom: 20px; }
-        .event img { width: 100%; height: auto; border-radius: 10px; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
+        .event img { width: 100%; height: auto; border-radius: 10px; box-shadow: 0 0 15px rgba(255,255,255,0.2); background: #222; }
         .title { margin-top: 15px; font-size: 1.6rem; font-weight: bold; }
         .date { font-size: 1.2rem; opacity: 0.8; }
     </style>
@@ -21,10 +21,7 @@
 (async function loadShows() {
     const container = document.getElementById("events");
     try {
-        // Your specific TuneHatch JSON feed
         const targetUrl = "https://tunehatch.com/api/v1/shows/feed/dc6b2a1a-b2c4-489b-bade-d1f3664ae171";
-        
-        // FIXED: The proxy bridge is now correctly included
         const finalUrl = "https://api.allorigins.win" + encodeURIComponent(targetUrl);
         
         console.log("Fetching from:", finalUrl);
@@ -33,8 +30,6 @@
         if (!response.ok) throw new Error("Network error");
         
         const data = await response.json();
-        
-        // Unbox the contents string into a real JSON array
         const shows = JSON.parse(data.contents); 
 
         if (!shows || shows.length === 0) {
@@ -56,13 +51,11 @@
             container.appendChild(div);
         });
 
-        // Start the scrolling
         startAutoScroll();
 
     } catch (err) {
         container.innerHTML = "<p style='color:red;'>Connection Error. Retrying...</p>";
         console.error("Load Error:", err);
-        // Refresh page automatically on error after 5 seconds
         setTimeout(function() { location.reload(); }, 5000);
     }
 })();
@@ -70,7 +63,6 @@
 function startAutoScroll() {
     setInterval(function() {
         window.scrollBy(0, 1);
-        // Reset to top once we hit the end
         if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 2) {
             window.scrollTo(0, 0);
         }
