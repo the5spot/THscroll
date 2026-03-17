@@ -6,12 +6,12 @@
     <title>The 5 Spot – Upcoming Shows</title>
     <style>
         body { margin: 0; padding: 0; background: #000; color: #fff; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
-        h1 { margin: 20px 0; font-size: 2.2rem; text-transform: uppercase; letter-spacing: 2px; border-bottom: 2px solid #fff; padding-bottom: 5px; }
-        .events { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 90vw; padding-bottom: 150px; }
+        h1 { margin: 20px 0; font-size: 2.5rem; text-transform: uppercase; letter-spacing: 2px; border-bottom: 2px solid #fff; padding-bottom: 10px; }
+        .events { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 90vw; padding-bottom: 200px; }
         .event { text-align: center; }
-        .event img { width: 100%; height: auto; border-radius: 10px; box-shadow: 0 0 15px rgba(255,255,255,0.1); background: #333; }
-        .title { margin-top: 15px; font-size: 1.4rem; font-weight: bold; }
-        .date { font-size: 1.1rem; opacity: 0.8; margin-bottom: 30px; }
+        .event img { width: 100%; height: auto; border-radius: 10px; box-shadow: 0 0 15px rgba(255,255,255,0.2); background: #222; }
+        .title { margin-top: 15px; font-size: 1.6rem; font-weight: bold; }
+        .date { font-size: 1.2rem; opacity: 0.8; margin-bottom: 40px; }
     </style>
 </head>
 <body>
@@ -19,18 +19,28 @@
     <div id="events" class="events">Loading shows...</div>
 
 <script>
-(async () => {
+(async function loadShows() {
     const container = document.getElementById("events");
+    
     try {
         const targetUrl = "https://tunehatch.com";
-        // Correct proxy format for AllOrigins
-        const finalUrl = `https://api.allorigins.win{encodeURIComponent(targetUrl)}`;
+        // Using standard string concatenation to avoid template literal errors
+        const finalUrl = "https://api.allorigins.win" + encodeURIComponent(targetUrl);
         
+        console.log("Fetching from:", finalUrl);
+
         const response = await fetch(finalUrl);
         if (!response.ok) throw new Error("Proxy connection failed");
         
         const data = await response.json();
-        const shows = JSON.parse(data.contents); // Extracts the actual JSON from the proxy wrapper
+        
+        // AllOrigins returns a 'contents' string which we must parse into JSON
+        const shows = JSON.parse(data.contents); 
+
+        if (!shows || shows.length === 0) {
+            container.innerHTML = "<h2>No upcoming shows found.</h2>";
+            return;
+        }
 
         container.innerHTML = ""; 
         const options = { month: "short", day: "numeric", weekday: "short" };
@@ -39,26 +49,28 @@
             const date = new Date(show.startDate);
             const div = document.createElement("div");
             div.className = "event";
-            div.innerHTML = `
-                <img src="${show.imageUrl}" alt="${show.title}">
-                <div class="title">${show.title}</div>
-                <div class="date">${date.toLocaleDateString("en-US", options)}</div>
-            `;
+            div.innerHTML = 
+                '<img src="' + (show.imageUrl || '') + '" alt="' + (show.title || 'Show') + '">' +
+                '<div class="title">' + (show.title || 'Upcoming Event') + '</div>' +
+                '<div class="date">' + date.toLocaleDateString("en-US", options) + '</div>';
             container.appendChild(div);
         });
 
         startAutoScroll();
 
     } catch (err) {
-        container.innerHTML = "<p style='color:red;'>Unable to load events. Please refresh.</p>";
-        console.error("Load Error:", err);
+        container.innerHTML = "<p style='color:red; font-size: 1.5rem;'>Unable to load events. Retrying in 10 seconds...</p>";
+        console.error("TuneHatch Load Error:", err);
+        setTimeout(() => location.reload(), 10000);
     }
 })();
 
 function startAutoScroll() {
-    setInterval(() => {
+    // Scroll 1 pixel every 40 milliseconds
+    setInterval(function() {
         window.scrollBy(0, 1);
-        if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 5) {
+        // Reset to top if we hit the bottom
+        if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 2) {
             window.scrollTo(0, 0);
         }
     }, 40); 
