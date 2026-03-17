@@ -53,20 +53,21 @@
 (async () => {
   try {
     const feedUrl = "https://tunehatch.com";
-    // 1. Use /get instead of /raw to bypass CORS correctly
+    // 1. Ensure you use /get?url=
     const proxyUrl = "https://api.allorigins.win" + encodeURIComponent(feedUrl);
     
     const response = await fetch(proxyUrl);
-    if (!response.ok) throw new Error("Feed fetch failed");
+    if (!response.ok) throw new Error("Fetch failed");
     
     const data = await response.json();
-    // 2. AllOrigins puts the actual API result inside data.contents
+    
+    // 2. CRITICAL: You must parse data.contents because it's returned as a string
     const shows = JSON.parse(data.contents); 
 
     const container = document.getElementById("events");
     const options = { month: "short", day: "numeric", weekday: "short" };
     
-    container.innerHTML = ""; // Clear loader
+    container.innerHTML = ""; // Remove error/loading message
     
     shows.slice(0, 4).forEach(show => {
       const date = new Date(show.startDate);
@@ -83,7 +84,7 @@
     });
   } catch (err) {
     document.getElementById("events").innerHTML = "<p>Unable to load events.</p>";
-    console.error("Error loading shows:", err);
+    console.error("TuneHatch Load Error:", err);
   }
 })();
 </script>
