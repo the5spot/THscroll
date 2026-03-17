@@ -2,86 +2,80 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>TuneHatch – Fixed Centered Scroll</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The 5 Spot – Upcoming Shows</title>
 <style>
-  html, body {
+  body {
     margin: 0;
     padding: 0;
-    overflow: hidden;
-    height: 100%;
+    background: #000;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  h1 {
+    margin: 20px 0;
+    font-size: 2.2rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  .events {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    max-width: 90vw;
+  }
+  .event {
+    text-align: center;
+  }
+  .event img {
     width: 100%;
-    background: #000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(255,255,255,0.2);
   }
-
-  .wrapper {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .title {
+    margin-top: 10px;
+    font-size: 1.4rem;
   }
-
-  iframe {
-    width: 80vw;
-    height: 400%;
-    border: none;
-    transform: translateY(0);
-    transform-origin: top center;
-    background: #000;
+  .date {
+    font-size: 1rem;
+    opacity: 0.8;
   }
 </style>
 </head>
 <body>
-<div class="wrapper">
-  <iframe id="tunehatch" src="https://tunehatch.com/e/upcomingShows/45056"></iframe>
-</div>
+  <h1>Upcoming Shows</h1>
+  <div id="events" class="events"></div>
 
 <script>
-  const iframe = document.getElementById('tunehatch');
+fetch("[tunehatch.com](https://tunehatch.com/api/v1/shows/feed/dc6b2a1a-b2c4-489b-bade-d1f3664ae171)")
+  .then(r => r.json())
+  .then(shows => {
+    const container = document.getElementById('events');
+    const options = { month: 'short', day: 'numeric', weekday: 'short' };
 
-  const scrollSpeed = 2.0;     // pixels per frame
-  const pauseAtBottom = 2500;  // ms pause before restarting
-  const pauseAtTop = 800;      // ms pause before scrolling again
-  const targetScroll = 3200;   // how far to scroll down (~4 images)
-
-  let position = 0;
-  let scrolling = false;
-
-  function startScroll() {
-    scrolling = true;
-    position = 0;
-    iframe.style.transform = 'translateY(0)';
-    requestAnimationFrame(animate);
-  }
-
-  function animate() {
-    if (!scrolling) return;
-
-    position += scrollSpeed;
-    iframe.style.transform = `translateY(-${position}px)`;
-
-    if (position >= targetScroll) {
-      scrolling = false;
-      setTimeout(() => {
-        iframe.style.transform = 'translateY(0)';
-        position = 0;
-        setTimeout(() => {
-          scrolling = true;
-          requestAnimationFrame(animate);
-        }, pauseAtTop);
-      }, pauseAtBottom);
-    } else {
-      requestAnimationFrame(animate);
-    }
-  }
-
-  setTimeout(startScroll, 2000);
+    shows.slice(0,4).forEach(show => {
+      const date = new Date(show.startDate);
+      const div = document.createElement('div');
+      div.className = 'event';
+      div.innerHTML = `
+        <a href="${show.ticketUrl}" target="_blank">
+          <img src="${show.imageUrl}" alt="${show.title}" />
+        </a>
+        <div class="title">${show.title}</div>
+        <div class="date">${date.toLocaleDateString('en-US', options)}</div>
+      `;
+      container.appendChild(div);
+    });
+  })
+  .catch(err => {
+    const container = document.getElementById('events');
+    container.innerHTML = "<p>Unable to load events.</p>";
+    console.error(err);
+  });
 </script>
 </body>
 </html>
