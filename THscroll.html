@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The 5 Spot – Upcoming Shows</title>
-<!-- This line stops the favicon error -->
+<!-- FIX: This line stops the favicon 404 error by providing a blank icon -->
 <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 <style>
   body { margin: 0; padding: 0; background: #000; color: #fff; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; }
@@ -26,13 +26,13 @@
   try {
     const feed = "https://tunehatch.com";
     
-    // THE CRITICAL LINE: Must have /get?url=
+    // FIX: Using /get?url= to bridge the connection correctly
     const proxyUrl = "https://api.allorigins.win" + encodeURIComponent(feed);
     
     const response = await fetch(proxyUrl);
     const data = await response.json();
     
-    // UNBOX: data.contents is a string, we turn it into an object
+    // UNBOX: Convert the proxy string into a list of shows
     const shows = JSON.parse(data.contents); 
 
     container.innerHTML = ""; 
@@ -50,11 +50,12 @@
       container.appendChild(div);
     });
 
+    // Start the scroll once shows are loaded
     startAutoScroll();
 
   } catch (err) {
     container.innerHTML = "<p style='color:red;'>Unable to load events. Refresh page.</p>";
-    console.error("Fetch Error:", err);
+    console.error("TuneHatch Error:", err);
   }
 })();
 
@@ -64,7 +65,7 @@ function startAutoScroll() {
     if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 2) {
       window.scrollTo(0, 0);
     }
-  }, 40); 
+  }, 40); // Lower number = faster scroll
 }
 </script>
 </body>
