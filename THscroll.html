@@ -6,35 +6,97 @@
     <title>The 5 Spot – Upcoming Shows</title>
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <style>
-        body { margin: 0; padding: 0; background: #000; color: #fff; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; }
-        h1 { margin: 20px 0; font-size: 2.2rem; text-transform: uppercase; letter-spacing: 2px; }
-        .events { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 90vw; padding-bottom: 150px; }
-        .event { text-align: center; }
-        .event img { width: 100%; height: auto; border-radius: 10px; box-shadow: 0 0 15px rgba(255,255,255,0.1); }
-        .title { margin-top: 15px; font-size: 1.4rem; font-weight: bold; }
-        .date { font-size: 1.1rem; opacity: 0.8; margin-bottom: 30px; }
+        /* Modern kiosk styling */
+        body { 
+            margin: 0; 
+            padding: 0; 
+            background: #000; 
+            color: #fff; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            overflow: hidden; /* Prevents manual scrollbars */
+        }
+        
+        h1 { 
+            margin: 30px 0; 
+            font-size: 3rem; 
+            text-transform: uppercase; 
+            letter-spacing: 4px; 
+            border-bottom: 2px solid #fff;
+            padding-bottom: 10px;
+        }
+
+        .events { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 50px; 
+            max-width: 90vw; 
+            padding-bottom: 200px; /* Space for the loop reset */
+        }
+
+        .event { 
+            text-align: center; 
+            animation: fadeIn 1s ease-in;
+        }
+
+        .event img { 
+            width: 100%; 
+            height: auto; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 30px rgba(255,255,255,0.1);
+            background: #222; /* Placeholder color while loading */
+        }
+
+        .title { 
+            margin-top: 20px; 
+            font-size: 1.8rem; 
+            font-weight: bold; 
+            color: #f1f1f1;
+        }
+
+        .date { 
+            font-size: 1.3rem; 
+            color: #aaa; 
+            margin-bottom: 40px; 
+            text-transform: uppercase;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #error-msg { color: #ff4444; font-size: 1.2rem; margin-top: 50px; }
     </style>
 </head>
 <body>
+
     <h1>Upcoming Shows</h1>
-    <div id="events" class="events">Loading shows...</div>
+    <div id="events" class="events">Loading latest shows...</div>
 
 <script>
 (async () => {
     const container = document.getElementById("events");
+    
     try {
-        // FIXED: This is one solid string with the required /get?url= bridge
-        const finalUrl = "https://api.allorigins.win" + encodeURIComponent("https://tunehatch.com/api/v1/shows/feed/dc6b2a1a-b2c4-489b-bade-d1f3664ae171"); 
+        // The specific TuneHatch feed for The 5 Spot
+        const targetUrl = "https://tunehatch.com";
+        const finalUrl = `https://api.allorigins.win{encodeURIComponent(targetUrl)}`;
         
-        console.log("Fetching from:", finalUrl);
+        console.log("Fetching feed...");
 
         const response = await fetch(finalUrl);
-        if (!response.ok) throw new Error("Proxy connection failed");
+        if (!response.ok) throw new Error("Could not connect to proxy");
         
         const data = await response.json();
-        
-        // UNBOX: AllOrigins wraps the data in a 'contents' string
-        const shows = JSON.parse(data.contents); 
+        const shows = JSON.parse(data.contents); // Unbox the proxy data
+
+        if (!shows || shows.length === 0) {
+            container.innerHTML = "<p>No upcoming shows found.</p>";
+            return;
+        }
 
         container.innerHTML = ""; 
         const options = { month: "short", day: "numeric", weekday: "short" };
@@ -43,30 +105,38 @@
             const date = new Date(show.startDate);
             const div = document.createElement("div");
             div.className = "event";
+            
+            // Standard TuneHatch feed fields: title, startDate, imageUrl
             div.innerHTML = `
-                <img src="${show.imageUrl}" alt="${show.title}">
+                <img src="${show.imageUrl || 'https://via.placeholder.com'}" alt="${show.title}">
                 <div class="title">${show.title}</div>
                 <div class="date">${date.toLocaleDateString("en-US", options)}</div>
             `;
             container.appendChild(div);
         });
 
-        // Start scrolling once visible
+        // Start auto-scroll once content is rendered
         startAutoScroll();
 
     } catch (err) {
-        container.innerHTML = "<p style='color:red;'>Unable to load events. Please refresh.</p>";
-        console.error("TuneHatch Load Error:", err);
+        container.innerHTML = `<div id="error-msg">Unable to load shows. Checking connection...</div>`;
+        console.error("Fetch Error:", err);
+        // Retry after 30 seconds if it fails
+        setTimeout(() => location.reload(), 30000);
     }
 })();
 
 function startAutoScroll() {
+    let scrollSpeed = 1; // Increase for faster scrolling
+    
     setInterval(() => {
-        window.scrollBy(0, 1);
-        if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 5) {
+        window.scrollBy(0, scrollSpeed);
+        
+        // Loop back to top when reaching bottom
+        if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 2) {
             window.scrollTo(0, 0);
         }
-    }, 40); 
+    }, 35); // Milliseconds between steps
 }
 </script>
 </body>
