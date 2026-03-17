@@ -53,10 +53,10 @@
 
         startAutoScroll();
 
-    } catch (err) {
-        container.innerHTML = "<p style='color:red;'>Connection Error. Fuck</p>";
-     
-    }
+  } catch (err) {
+    container.innerHTML = "<p style='color:red;'>Connection Error. Check Console for details.</p>";
+    console.error("FULL ERROR DETAILS:", err); // This will show you exactly what is failing
+}
 })();
 
 function startAutoScroll() {
