@@ -53,13 +53,20 @@
 (async () => {
   const container = document.getElementById("events");
   try {
-    // This line MUST have /get?url= to work
-    const proxyUrl = "https://api.allorigins.win" + encodeURIComponent("https://tunehatch.com");
+    // 1. The target TuneHatch feed
+    const tuneHatchFeed = "https://tunehatch.com";
     
+    // 2. The CORRECT proxy bridge (Note the /get?url=)
+    const proxyUrl = "https://api.allorigins.win" + encodeURIComponent(tuneHatchFeed);
+    
+    console.log("Fetching from: " + proxyUrl);
+
     const response = await fetch(proxyUrl);
+    if (!response.ok) throw new Error("Proxy error");
+    
     const data = await response.json();
     
-    // Convert the text from the proxy into a list of shows
+    // 3. AllOrigins wraps the result in 'contents'. We must parse it.
     const shows = JSON.parse(data.contents); 
 
     container.innerHTML = ""; 
@@ -77,7 +84,7 @@
       container.appendChild(div);
     });
   } catch (err) {
-    container.innerHTML = "<p>Unable to load events.</p>";
+    container.innerHTML = "<p>Unable to load events. See console for details.</p>";
     console.error("TuneHatch Error:", err);
   }
 })();
