@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The 5 Spot – Upcoming Shows</title>
+<title>The 5 Spot – Upcoming Shows</title>
 <style>
   body {
     margin: 0;
@@ -39,29 +39,32 @@
   .title {
     margin-top: 10px;
     font-size: 1.4rem;
+    font-weight: bold;
   }
   .date {
     font-size: 1rem;
     opacity: 0.8;
+    margin-bottom: 20px;
   }
 </style>
 </head>
 <body>
-  <h1>Upcoming Shows</h1>
-  <div id="events" class="events"></div>
+  <h1>Upcoming Shows</h1>
+  <div id="events" class="events">Loading shows...</div>
+
 <script>
 (async () => {
   const container = document.getElementById("events");
   try {
-    // 1. THIS IS THE FIXED BRIDGE URL:
-    const proxyUrl = "https://api.allorigins.win";
+    // FIXED: The full, combined URL including /get?url=
+    const proxyUrl = "https://api.allorigins.win" + encodeURIComponent("https://tunehatch.com");
     
-    console.log("Fetching from:", proxyUrl);
-
     const response = await fetch(proxyUrl);
+    if (!response.ok) throw new Error("Proxy fetch failed");
+    
     const data = await response.json();
     
-    // 2. OPEN THE 'CONTENTS' PACKAGE:
+    // OPEN THE PACKAGE: Parse the 'contents' string into a list
     const shows = JSON.parse(data.contents); 
 
     container.innerHTML = ""; 
@@ -72,14 +75,14 @@
       const div = document.createElement("div");
       div.className = "event";
       div.innerHTML = `
-        <img src="${show.imageUrl}" style="width:100%; border-radius:10px;">
-        <div class="title" style="margin:10px 0; font-size:1.4rem; font-weight:bold;">${show.title}</div>
-        <div class="date" style="margin-bottom:30px; opacity:0.8;">${date.toLocaleDateString("en-US", options)}</div>
+        <img src="${show.imageUrl}" alt="${show.title}">
+        <div class="title">${show.title}</div>
+        <div class="date">${date.toLocaleDateString("en-US", options)}</div>
       `;
       container.appendChild(div);
     });
   } catch (err) {
-    container.innerHTML = "<p>Unable to load events. See console for details.</p>";
+    container.innerHTML = "<p>Unable to load events. Check console for details.</p>";
     console.error("TuneHatch Error:", err);
   }
 })();
