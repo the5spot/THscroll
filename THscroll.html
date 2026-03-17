@@ -51,7 +51,7 @@
   <div id="events" class="events"></div>
 
 <script>
-fetch("[tunehatch.com](https://tunehatch.com/api/v1/shows/feed/dc6b2a1a-b2c4-489b-bade-d1f3664ae171)")
+fetch("[api.allorigins.win](https://api.allorigins.win/raw?url=)" + encodeURIComponent("[tunehatch.com](https://tunehatch.com/api/v1/shows/feed/dc6b2a1a-b2c4-489b-bade-d1f3664ae171)"))
   .then(r => r.json())
   .then(shows => {
     const container = document.getElementById('events');
