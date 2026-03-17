@@ -1,71 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The 5 Spot – Upcoming Shows</title>
-<!-- FIX: This line stops the favicon 404 error by providing a blank icon -->
-<link rel="icon" href="data:;base64,iVBORw0KGgo=">
-<style>
-  body { margin: 0; padding: 0; background: #000; color: #fff; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; }
-  h1 { margin: 20px 0; font-size: 2.2rem; text-transform: uppercase; letter-spacing: 2px; }
-  .events { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 90vw; padding-bottom: 100px; }
-  .event { text-align: center; }
-  .event img { width: 100%; height: auto; border-radius: 10px; box-shadow: 0 0 15px rgba(255,255,255,0.1); }
-  .title { margin-top: 15px; font-size: 1.4rem; font-weight: bold; }
-  .date { font-size: 1.1rem; opacity: 0.8; margin-bottom: 30px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The 5 Spot – Upcoming Shows</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <style>
+        body { margin: 0; padding: 0; background: #000; color: #fff; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; }
+        h1 { margin: 20px 0; font-size: 2.2rem; text-transform: uppercase; letter-spacing: 2px; }
+        .events { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 90vw; padding-bottom: 100px; }
+        .event { text-align: center; }
+        .event img { width: 100%; height: auto; border-radius: 10px; box-shadow: 0 0 15px rgba(255,255,255,0.1); }
+        .title { margin-top: 15px; font-size: 1.4rem; font-weight: bold; }
+        .date { font-size: 1.1rem; opacity: 0.8; margin-bottom: 30px; }
+    </style>
 </head>
 <body>
-  <h1>Upcoming Shows</h1>
-  <div id="events" class="events">Loading shows...</div>
+    <h1>Upcoming Shows</h1>
+    <div id="events" class="events">Loading shows...</div>
 
 <script>
 (async () => {
-  const container = document.getElementById("events");
-  try {
-    const feed = "https://tunehatch.com";
-    
-    // FIX: Using /get?url= to bridge the connection correctly
-    const proxyUrl = "https://api.allorigins.win" + encodeURIComponent(feed);
-    
-    const response = await fetch(proxyUrl);
-    const data = await response.json();
-    
-    // UNBOX: Convert the proxy string into a list of shows
-    const shows = JSON.parse(data.contents); 
+    const container = document.getElementById("events");
+    try {
+        const targetUrl = "https://tunehatch.com";
+        
+        // THE FIX: Adding /get?url= to the proxy
+        const proxyUrl = "https://api.allorigins.win" + encodeURIComponent(targetUrl);
+        
+        console.log("Fetching from:", proxyUrl);
 
-    container.innerHTML = ""; 
-    const options = { month: "short", day: "numeric", weekday: "short" };
-    
-    shows.forEach(show => {
-      const date = new Date(show.startDate);
-      const div = document.createElement("div");
-      div.className = "event";
-      div.innerHTML = `
-        <img src="${show.imageUrl}" alt="${show.title}">
-        <div class="title">${show.title}</div>
-        <div class="date">${date.toLocaleDateString("en-US", options)}</div>
-      `;
-      container.appendChild(div);
-    });
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error("Network response was not ok");
+        
+        const data = await response.json();
+        
+        // UNBOX: AllOrigins wraps the data in 'contents'
+        const shows = JSON.parse(data.contents); 
 
-    // Start the scroll once shows are loaded
-    startAutoScroll();
+        container.innerHTML = ""; 
+        const options = { month: "short", day: "numeric", weekday: "short" };
+        
+        shows.forEach(show => {
+            const date = new Date(show.startDate);
+            const div = document.createElement("div");
+            div.className = "event";
+            div.innerHTML = `
+                <img src="${show.imageUrl}" alt="${show.title}">
+                <div class="title">${show.title}</div>
+                <div class="date">${date.toLocaleDateString("en-US", options)}</div>
+            `;
+            container.appendChild(div);
+        });
 
-  } catch (err) {
-    container.innerHTML = "<p style='color:red;'>Unable to load events. Refresh page.</p>";
-    console.error("TuneHatch Error:", err);
-  }
+        // Start scrolling once loaded
+        startAutoScroll();
+
+    } catch (err) {
+        container.innerHTML = "<p style='color:red;'>Unable to load events. Check console.</p>";
+        console.error("TuneHatch Load Error:", err);
+    }
 })();
 
 function startAutoScroll() {
-  setInterval(() => {
-    window.scrollBy(0, 1);
-    if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 2) {
-      window.scrollTo(0, 0);
-    }
-  }, 40); // Lower number = faster scroll
+    setInterval(() => {
+        window.scrollBy(0, 1);
+        if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 2) {
+            window.scrollTo(0, 0);
+        }
+    }, 40); 
 }
 </script>
 </body>
