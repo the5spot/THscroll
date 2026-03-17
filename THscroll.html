@@ -53,20 +53,15 @@
 (async () => {
   const container = document.getElementById("events");
   try {
-    // 1. The target TuneHatch feed
-    const tuneHatchFeed = "https://tunehatch.com";
+    // 1. THIS IS THE FIXED BRIDGE URL:
+    const proxyUrl = "https://api.allorigins.win";
     
-    // 2. The CORRECT proxy bridge (Note the /get?url=)
-    const proxyUrl = "https://api.allorigins.win" + encodeURIComponent(tuneHatchFeed);
-    
-    console.log("Fetching from: " + proxyUrl);
+    console.log("Fetching from:", proxyUrl);
 
     const response = await fetch(proxyUrl);
-    if (!response.ok) throw new Error("Proxy error");
-    
     const data = await response.json();
     
-    // 3. AllOrigins wraps the result in 'contents'. We must parse it.
+    // 2. OPEN THE 'CONTENTS' PACKAGE:
     const shows = JSON.parse(data.contents); 
 
     container.innerHTML = ""; 
