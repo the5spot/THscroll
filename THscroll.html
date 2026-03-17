@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>The 5 Spot – Upcoming Shows</title>
     <style>
-        body { margin: 0; background: #000; color: #fff; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
+        body { margin: 0; background: #000; color: #fff; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; overflow-y: auto; }
         h1 { margin: 20px 0; font-size: 2.5rem; text-transform: uppercase; border-bottom: 2px solid #fff; padding-bottom: 10px; }
         .events { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 90vw; padding-bottom: 400px; }
         .event { text-align: center; margin-bottom: 20px; }
@@ -22,15 +22,15 @@
     const container = document.getElementById("events");
     try {
         const targetUrl = "https://tunehatch.com/api/v1/shows/feed/dc6b2a1a-b2c4-489b-bade-d1f3664ae171";
-        const finalUrl = "https://corsproxy.io/?url=" + encodeURIComponent(targetUrl);
+        const finalUrl = "https://api.allorigins.win/get/?url=" + encodeURIComponent(targetUrl);
         
         console.log("Fetching from:", finalUrl);
 
         const response = await fetch(finalUrl);
         if (!response.ok) throw new Error("Network error");
         
-        
-        const shows = await response.json();  
+        const data = await response.json();
+        const shows = JSON.parse(data.contents);  
 
         if (!shows || shows.length === 0) {
             container.innerHTML = "<h2>No shows currently scheduled.</h2>";
@@ -54,7 +54,7 @@
         startAutoScroll();
 
   } catch (err) {
-    container.innerHTML = "<p style='color:red;'>Connection Error. shitfuck.</p>";
+    container.innerHTML = "<p style='color:red;'>Connection Error. shitfuckcrap.</p>";
     console.error("FULL ERROR DETAILS:", err); // This will show you exactly what is failing
 }
 })();
