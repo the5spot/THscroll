@@ -21,35 +21,51 @@
     <div class="panel" id="weekly"><h2>Upcoming Week</h2><div id="ticker"></div></div>
 
     <script>
-        async function updateFeed() {
-            // This URL only works when running ON the Yodeck Raspberry Pi
-            const playerProxy = "http://localhost:9999/request";
-            
+    let auth_token = "";
+
+    // Yodeck automatically calls this function when the app starts
+    function init_widget(config) {
+        if (config && config.player_params) {
+            auth_token = config.player_params['auth_token'];
+        }
+        updateFeed(); // Start the feed once we have the token
+    }
+
+    async function updateFeed() {
+        // Try port 9999 first, then 8080 if it fails
+        const ports = ["9999", "8080"];
+        let success = false;
+
+        for (let port of ports) {
+            if (success) break;
+
+            const playerProxy = `http://localhost:${port}/request`;
             const requestOptions = {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `widget ${auth_token}` // Required security header
+                },
                 body: JSON.stringify({
-                    url: "https://tunehatch.com/api/v1/shows/feed/dc6b2a1a-b2c4-489b-bade-d1f3664ae171?limit=100",
+                    url: "https://tunehatch.com/api/v1/shows/feed/dc6b2a1a-b2c4-489b-bade-d1f3664ae171?limit=10",
                     method: "GET"
                 })
             };
 
             try {
                 const response = await fetch(playerProxy, requestOptions);
+                if (!response.ok) continue;
+
                 const result = await response.json();
-                
-                // Parse the events from TuneHatch
                 const shows = result.events;
                 const todayStr = new Date().toISOString().split('T')[0];
 
-                // Filter for today's 6PM and 9PM shows
                 const early = shows.find(s => s.start_time.includes('18:00') && s.start_time.startsWith(todayStr));
                 const late = shows.find(s => s.start_time.includes('21:00') && s.start_time.startsWith(todayStr));
 
                 document.getElementById('early-content').innerText = early ? early.name : "No Show Scheduled";
                 document.getElementById('late-content').innerText = late ? late.name : "No Show Scheduled";
 
-                // Build the scrolling weekly list
                 const ticker = document.getElementById('ticker');
                 ticker.innerHTML = '<div class="scroll">' + 
                     shows.map(s => {
@@ -57,16 +73,20 @@
                         const time = new Date(s.start_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
                         return `<div class="ticker-item"><strong>${date} @ ${time}</strong><br>${s.name}</div>`;
                     }).join('') + '</div>';
-
+                
+                success = true;
             } catch (error) {
-                document.getElementById('early-content').innerText = "Connecting to Player...";
-                console.error("Error fetching data:", error);
+                console.log(`Port ${port} failed, trying next...`);
             }
         }
 
-        // Run immediately, then every 30 minutes
-        updateFeed();
-        setInterval(updateFeed, 1800000);
-    </script>
+        if (!success) {
+            document.getElementById('early-content').innerText = "Waiting for Player Sync...";
+        }
+    }
+
+    // Refresh every 30 minutes
+    setInterval(updateFeed, 1800000);
+</script>
 </body>
 </html>
