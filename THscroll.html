@@ -49,15 +49,13 @@
 <body>
   <h1>Upcoming Shows</h1>
   <div id="events" class="events"></div>
-
 <script>
 fetch("[api.allorigins.win](https://api.allorigins.win/raw?url=)" + encodeURIComponent("[tunehatch.com](https://tunehatch.com/api/v1/shows/feed/dc6b2a1a-b2c4-489b-bade-d1f3664ae171)"))
   .then(r => r.json())
   .then(shows => {
     const container = document.getElementById('events');
     const options = { month: 'short', day: 'numeric', weekday: 'short' };
-
-    shows.slice(0,4).forEach(show => {
+    shows.slice(0, 4).forEach(show => {
       const date = new Date(show.startDate);
       const div = document.createElement('div');
       div.className = 'event';
@@ -72,8 +70,7 @@ fetch("[api.allorigins.win](https://api.allorigins.win/raw?url=)" + encodeURICom
     });
   })
   .catch(err => {
-    const container = document.getElementById('events');
-    container.innerHTML = "<p>Unable to load events.</p>";
+    document.getElementById('events').innerHTML = "<p>Unable to load events.</p>";
     console.error(err);
   });
 </script>
