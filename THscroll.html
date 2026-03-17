@@ -22,21 +22,19 @@
 <script>
 (async () => {
     const container = document.getElementById("events");
-    const targetUrl = "https://tunehatch.com";
-    
-    // BACK TO ALLORIGINS: It is the most stable for this specific API
-    const proxyUrl = "https://api.allorigins.win" + encodeURIComponent(targetUrl);
-
     try {
-        const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error("Proxy failed to respond");
+        // FIXED: This is one solid string with the required /get?url= bridge
+        const finalUrl = "https://api.allorigins.win" + encodeURIComponent("https://tunehatch.com");
+        
+        console.log("Fetching from:", finalUrl);
+
+        const response = await fetch(finalUrl);
+        if (!response.ok) throw new Error("Proxy connection failed");
         
         const data = await response.json();
         
-        // AllOrigins returns the data as a string in 'contents'
+        // UNBOX: AllOrigins wraps the data in a 'contents' string
         const shows = JSON.parse(data.contents); 
-
-        if (!Array.isArray(shows)) throw new Error("Invalid data format");
 
         container.innerHTML = ""; 
         const options = { month: "short", day: "numeric", weekday: "short" };
@@ -53,20 +51,18 @@
             container.appendChild(div);
         });
 
-        // Start scrolling
+        // Start scrolling once visible
         startAutoScroll();
 
     } catch (err) {
-        console.error("Load Error:", err);
-        container.innerHTML = "<p style='color:red;'>Unable to load shows. Refreshing in 30 seconds...</p>";
-        setTimeout(() => location.reload(), 30000);
+        container.innerHTML = "<p style='color:red;'>Unable to load events. Please refresh.</p>";
+        console.error("TuneHatch Load Error:", err);
     }
 })();
 
 function startAutoScroll() {
     setInterval(() => {
         window.scrollBy(0, 1);
-        // Loop back to top if at bottom
         if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 5) {
             window.scrollTo(0, 0);
         }
