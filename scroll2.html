@@ -22,17 +22,32 @@
 
     <script>
     let auth_token = "";
+    let syncStarted = false;
 
-    // Yodeck automatically calls this function when the app starts
+    // 1. Yodeck's standard entry point
     function init_widget(config) {
         if (config && config.player_params) {
             auth_token = config.player_params['auth_token'];
+            console.log("Token received via init_widget");
+            startSync();
         }
-        updateFeed(); // Start the feed once we have the token
+    }
+
+    // 2. Fallback: Force start if init_widget takes too long
+    setTimeout(() => {
+        if (!syncStarted) {
+            console.log("Forcing sync start...");
+            startSync();
+        }
+    }, 5000);
+
+    function startSync() {
+        syncStarted = true;
+        updateFeed();
+        setInterval(updateFeed, 1800000); // Refresh every 30 mins
     }
 
     async function updateFeed() {
-        // Try port 9999 first, then 8080 if it fails
         const ports = ["9999", "8080"];
         let success = false;
 
@@ -44,11 +59,12 @@
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'Authorization': `widget ${auth_token}` // Required security header
+                    'Authorization': `widget ${auth_token}` 
                 },
                 body: JSON.stringify({
-                    url: "https://tunehatch.com/api/v1/shows/feed/dc6b2a1a-b2c4-489b-bade-d1f3664ae171?limit=10",
-                    method: "GET"
+                    url: "https://tunehatch.com/api/v1/shows/feed/dc6b2a1a-b2c4-489b-bade-d1f3664ae171?limit=100",
+                    method: "GET",
+                    cache: 3600
                 })
             };
 
@@ -75,18 +91,13 @@
                     }).join('') + '</div>';
                 
                 success = true;
-            } catch (error) {
-                console.log(`Port ${port} failed, trying next...`);
-            }
+            } catch (e) { continue; }
         }
 
         if (!success) {
-            document.getElementById('early-content').innerText = "Waiting for Player Sync...";
+            document.getElementById('early-content').innerText = "Reconnecting...";
         }
     }
-
-    // Refresh every 30 minutes
-    setInterval(updateFeed, 1800000);
 </script>
 </body>
 </html>
