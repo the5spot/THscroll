@@ -5,61 +5,68 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TuneHatch Display</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #000; color: #fff; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        body { font-family: 'Segoe UI', sans-serif; background: #000; color: #fff; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         .panel { border-bottom: 3px solid #333; padding: 20px; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
         #weekly { flex: 2; overflow: hidden; background: #111; }
-        .show-title { font-size: 2.5rem; font-weight: bold; color: #ffcc00; margin-bottom: 10px; }
-        .show-name { font-size: 1.8rem; }
-        h2 { text-transform: uppercase; letter-spacing: 2px; color: #888; font-size: 1.2rem; margin-bottom: 5px; }
+        .show-name { font-size: 2rem; font-weight: bold; color: #ffcc00; }
+        h2 { text-transform: uppercase; letter-spacing: 2px; color: #888; font-size: 1.2rem; margin-bottom: 10px; }
         .ticker-item { padding: 15px; border-bottom: 1px solid #222; font-size: 1.4rem; }
-        .scroll { animation: scrollUp 30s linear infinite; }
-        @keyframes scrollUp { 0% { transform: translateY(0); } 100% { transform: translateY(-100%); } }
+        .scroll { animation: scrollUp 40s linear infinite; }
+        @keyframes scrollUp { 0% { transform: translateY(100%); } 100% { transform: translateY(-100%); } }
     </style>
 </head>
 <body>
-    <div class="panel" id="early-show"><h2>6:00 PM Early Show</h2><div class="show-name" id="early-content">Searching...</div></div>
-    <div class="panel" id="late-show"><h2>9:00 PM Late Show</h2><div class="show-name" id="late-content">Searching...</div></div>
+    <div class="panel" id="early-show"><h2>6:00 PM Early Show</h2><div class="show-name" id="early-content">Loading...</div></div>
+    <div class="panel" id="late-show"><h2>9:00 PM Late Show</h2><div class="show-name" id="late-content">Loading...</div></div>
     <div class="panel" id="weekly"><h2>Upcoming Week</h2><div id="ticker"></div></div>
 
     <script>
         async function updateFeed() {
-            const proxy = "https://api.allorigins.win/get?url=";
-            const targetUrl = encodeURIComponent("https://tunehatch.com/api/v1/shows/feed/dc6b2a1a-b2c4-489b-bade-d1f3664ae171");
+            // This URL only works when running ON the Yodeck Raspberry Pi
+            const playerProxy = "http://localhost:8080/request";
             
-            try {
-                const response = await fetch(proxy + targetUrl);
-                const result = await response.json();
-                const rawData = JSON.parse(result.contents); 
-                
-                // FIX: TuneHatch data is inside the 'events' key
-                const data = rawData.events; 
-                
-                const now = new Date();
-                const todayStr = now.toISOString().split('T')[0];
+            const requestOptions = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    url: "https://tunehatch.com/api/v1/shows/feed/dc6b2a1a-b2c4-489b-bade-d1f3664ae171?limit=100",
+                    method: "GET"
+                })
+            };
 
-                // Filter for today's specific slots
-                const early = data.find(s => s.start_time.includes('18:00') && s.start_time.startsWith(todayStr));
-                const late = data.find(s => s.start_time.includes('21:00') && s.start_time.startsWith(todayStr));
+            try {
+                const response = await fetch(playerProxy, requestOptions);
+                const result = await response.json();
+                
+                // Parse the events from TuneHatch
+                const shows = result.events;
+                const todayStr = new Date().toISOString().split('T')[0];
+
+                // Filter for today's 6PM and 9PM shows
+                const early = shows.find(s => s.start_time.includes('18:00') && s.start_time.startsWith(todayStr));
+                const late = shows.find(s => s.start_time.includes('21:00') && s.start_time.startsWith(todayStr));
 
                 document.getElementById('early-content').innerText = early ? early.name : "No Show Scheduled";
                 document.getElementById('late-content').innerText = late ? late.name : "No Show Scheduled";
 
-                // Weekly Scroll
+                // Build the scrolling weekly list
                 const ticker = document.getElementById('ticker');
                 ticker.innerHTML = '<div class="scroll">' + 
-                    data.map(s => {
+                    shows.map(s => {
                         const date = new Date(s.start_time).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
                         const time = new Date(s.start_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
                         return `<div class="ticker-item"><strong>${date} @ ${time}</strong><br>${s.name}</div>`;
                     }).join('') + '</div>';
+
             } catch (error) {
-                document.getElementById('early-content').innerText = "Connection Error";
-                console.error("Fetch error:", error);
+                document.getElementById('early-content').innerText = "Connecting to Player...";
+                console.error("Error fetching data:", error);
             }
         }
 
+        // Run immediately, then every 30 minutes
         updateFeed();
-        setInterval(updateFeed, 1800000); 
+        setInterval(updateFeed, 1800000);
     </script>
 </body>
 </html>
