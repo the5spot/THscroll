@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The 5 Spot – Upcoming Shows</title>
-    <!-- This line stops the favicon 404 error -->
+    <!-- This stops the favicon 404 error -->
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <style>
         body { margin: 0; padding: 0; background: #000; color: #fff; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; }
@@ -26,15 +26,15 @@
     try {
         const targetUrl = "https://tunehatch.com";
         
-        // FIXED: The correct bridge format as suggested by the console AI
+        // FIX: Added /get?url= so the proxy works correctly
         const fullUrl = "https://api.allorigins.win" + encodeURIComponent(targetUrl);
         
         const response = await fetch(fullUrl);
-        if (!response.ok) throw new Error("Network response was not ok");
+        if (!response.ok) throw new Error("Proxy fetch failed");
         
         const data = await response.json();
         
-        // UNBOX: AllOrigins puts the data in a string called 'contents'
+        // UNBOX: AllOrigins wraps the data in a string called 'contents'
         const shows = JSON.parse(data.contents); 
 
         container.innerHTML = ""; 
@@ -52,11 +52,11 @@
             container.appendChild(div);
         });
 
-        // Start scrolling once shows are loaded
+        // Start scrolling once data is visible
         startAutoScroll();
 
     } catch (err) {
-        container.innerHTML = "<p style='color:red;'>Unable to load events. Please refresh.</p>";
+        container.innerHTML = "<p style='color:red;'>Unable to load events. Check console for errors.</p>";
         console.error("TuneHatch Load Error:", err);
     }
 })();
@@ -67,7 +67,7 @@ function startAutoScroll() {
         if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 2) {
             window.scrollTo(0, 0);
         }
-    }, 40); // 40ms interval for smooth motion
+    }, 40); 
 }
 </script>
 </body>
