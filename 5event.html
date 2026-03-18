@@ -73,8 +73,10 @@
         container.innerHTML = `
             <div class="event">
                 <img src="${show.flyerURL || ''}">
+                ${/* 
                 <div class="title">${show.name || 'Next Show'}</div>
                 <div class="date">${date.toLocaleDateString("en-US", options)}</div>
+                */ ''}
             </div>
         `;
 
