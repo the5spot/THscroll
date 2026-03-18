@@ -53,21 +53,27 @@
         const response = await fetch(targetUrl);
         if (!response.ok) throw new Error("CORS or Network Error");
         
-        const shows = await response.json(); 
+        const data = await response.json();
+        const shows = data.shows;
 
         if (!shows || shows.length === 0) {
             container.innerHTML = "<h1>No upcoming shows</h1>";
             return;
         }
 
-        const show = shows[1]; 
-        const date = new Date(show.startDate);
+        if (shows.length < 2) {
+            container.innerHTML = "";
+            return;
+        }
+
+        const show = shows[1];
+        const date = new Date(show.startsAt);
         const options = { weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' };
-        
+
         container.innerHTML = `
             <div class="event">
-                <img src="${show.imageUrl || ''}">
-                <div class="title">${show.title || 'Next Show'}</div>
+                <img src="${show.flyerURL || ''}">
+                <div class="title">${show.name || 'Next Show'}</div>
                 <div class="date">${date.toLocaleDateString("en-US", options)}</div>
             </div>
         `;
