@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0;
+            background: #000; 
+            color: #fff; 
+            font-family: Arial, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            width: 100vw;
+            overflow: hidden; 
+        }
+        .event { 
+            width: 100vw; 
+            height: 100vh; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .event img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: contain;
+            border-radius: 0; 
+        }
+        .title { 
+            margin-top: 20px; 
+            font-size: 3rem; 
+            font-weight: bold; 
+            text-transform: uppercase;
+        }
+        .date { 
+            font-size: 2rem; 
+            color: #ffcc00; /* Gold color to pop on TV */
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="next-show">Loading Next Event...</div>
+
+<script>
+(async function loadNextShow() {
+    const container = document.getElementById("next-show");
+    try {
+        // Updated with limit=8
+        const targetUrl = "https://tunehatch.com/api/v1/shows/feed/dc6b2a1a-b2c4-489b-bade-d1f3664ae171?limit=8";
+        
+        const response = await fetch(targetUrl);
+        if (!response.ok) throw new Error("CORS or Network Error");
+        
+        const data = await response.json();
+        const shows = data.shows;
+
+        if (!shows || shows.length === 0) {
+            container.innerHTML = "<h1>No upcoming shows</h1>";
+            return;
+        }
+
+        if (shows.length < 2) {
+            container.innerHTML = "";
+            return;
+        }
+
+        const show = shows[7];
+        const date = new Date(show.startsAt);
+        const options = { weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' };
+
+        container.innerHTML = `
+            <div class="event">
+                <img src="${show.flyerURL || ''}">
+                ${/* 
+                <div class="title">${show.name || 'Next Show'}</div>
+                <div class="date">${date.toLocaleDateString("en-US", options)}</div>
+                */ ''}
+            </div>
+        `;
+
+    } catch (err) {
+        container.innerHTML = ""; // Keep screen black if it fails, or add a logo here
+        console.error(err);
+    }
+})();
+</script>
+</body>
+</html>
